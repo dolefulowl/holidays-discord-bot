@@ -126,7 +126,8 @@ def get_holiday(date):
     holidays = cursor.fetchall()
     connection.close()
 
-    return [holiday[0] for holiday in holidays]
+    if holidays:
+        return [holiday[0] for holiday in holidays]
 
 
 def get_last_update():
@@ -137,7 +138,8 @@ def get_last_update():
     last_update = cursor.fetchone()
     connection.close()
 
-    return float(last_update[0])
+    if last_update:
+        return float(last_update[0])
 
 
 def set_last_update(date):

@@ -119,7 +119,7 @@ async def bg_task():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
-    #bg_task.start()
+    bg_task.start()
 
 
 bot.run(BOT_TOKEN)
