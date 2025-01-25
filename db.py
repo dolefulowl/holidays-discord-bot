@@ -1,6 +1,5 @@
 import re
 import sqlite3
-from datetime import datetime
 
 db_file = "celebrations.db"
 
@@ -140,6 +139,8 @@ def get_last_update():
 
     if last_update:
         return float(last_update[0])
+    else:
+        last_update = 1737821744 # 2007
 
 
 def set_last_update(date):
