@@ -137,10 +137,10 @@ def get_last_update():
     last_update = cursor.fetchone()
     connection.close()
 
-    if last_update:
-        return float(last_update[0])
+    if last_update is None:
+        return 1169730940 # 2007
     else:
-        last_update = 1737821744 # 2007
+        return float(last_update[0])
 
 
 def set_last_update(date):
