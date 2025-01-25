@@ -24,7 +24,7 @@ def is_24hours_past():
     current_time = datetime.now()
     time_difference = current_time - given_timestamp
 
-    if time_difference <= timedelta(hours=24):
+    if time_difference >= timedelta(hours=24):
         print(time_difference)
         return False
     else:
@@ -111,9 +111,9 @@ async def mygc(ctx):
 @tasks.loop(seconds=86400)
 async def bg_task():
     await bot.wait_until_ready()
-    if is_24hours_past():
-        await holidays_today()
-        await check_brth()
+    #if is_24hours_past():
+    await holidays_today()
+    await check_brth()
 
 
 @bot.event

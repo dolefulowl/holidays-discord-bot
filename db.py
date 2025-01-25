@@ -125,8 +125,8 @@ def get_holiday(date):
     holidays = cursor.fetchall()
     connection.close()
 
-    if holidays:
-        return [holiday[0] for holiday in holidays]
+
+    return [holiday[0] for holiday in holidays]
 
 
 def get_last_update():
