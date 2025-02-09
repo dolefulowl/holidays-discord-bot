@@ -3,6 +3,7 @@ import json
 import time
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import discord
 from discord.ext import commands, tasks
@@ -16,22 +17,23 @@ BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
-
+timezone = ZoneInfo("Europe/Kyiv")
 
 def is_24hours_past():
     timestamp = db.get_last_update()
-    given_timestamp = datetime.fromtimestamp(timestamp)
-    current_time = datetime.now()
+    given_timestamp = datetime.fromtimestamp(timestamp, timezone)
+    current_time = datetime.now(timezone)
     time_difference = current_time - given_timestamp
 
-    if time_difference <= timedelta(hours=24):
-        print(time_difference)
-        return False
-    else:
-        new_timestamp = time.time()
-        db.set_last_update(new_timestamp)
-        return True
+    if current_time.hour != 0:
+        return
 
+    if time_difference <= timedelta(seconds=86100):
+        return
+
+    new_timestamp = time.time()
+    db.set_last_update(new_timestamp)
+    return True
 
 def is_auth(user_id):
         user_ids = db.get_users_ids()
@@ -42,7 +44,7 @@ def is_auth(user_id):
 
 
 async def holidays_today():
-    today = datetime.now().strftime("%d%m%Y")
+    today = datetime.now(timezone).strftime("%d%m%Y")
     events = db.get_holiday(today)
     holidays = '\n'.join(f" - {event.title()} :partying_face:" for event in events)
 
@@ -52,7 +54,7 @@ async def holidays_today():
 async def check_brth():
     # $discord_id $name $desc $birh
     users = db.list_users()
-    current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    current_date = datetime.now(timezone).replace(hour=0, minute=0, second=0, microsecond=0)
     current_year = current_date.year
 
     for user in users:
@@ -60,7 +62,7 @@ async def check_brth():
         name = user[1]
         brth = user[3]
         birth_date = datetime.strptime(brth, "%d%m%Y")
-        birthday_this_year = birth_date.replace(year=current_year)
+        birthday_this_year = birth_date.replace(year=current_year, tzinfo=timezone)
 
         # If the birthday for this year has passed, calculate for the next year
         if birthday_this_year < current_date:
@@ -71,8 +73,8 @@ async def check_brth():
 
         if remaining_days == 30 or remaining_days == 7:
             days_left = f"{remaining_days} days remaining until {name}'s birthday on {birthday_this_year.strftime('%d %b')}. They will turn {age} years old."
-            how_to = f"Don't fortget to prepare your congratulations with !gc command in bot's DM\n Use !mygc to verify all your congratulations."
-            warn_msg = f"{days_left}\n{how_to}"
+            how_to = f"Don't forget to prepare your congratulations with !gc command in bot's DM\nUse !mygc to verify all your congratulations."
+            warn_msg = f"@everyone\n{days_left}\n{how_to}"
             await send(warn_msg)
 
         elif remaining_days == 0:
@@ -108,7 +110,7 @@ async def mygc(ctx):
         await ctx.send(reply)
 
 
-@tasks.loop(seconds=86400)
+@tasks.loop(seconds=60)
 async def bg_task():
     await bot.wait_until_ready()
     if is_24hours_past():
